@@ -1,0 +1,7 @@
+{
+  "name": "Bozeman Business Hub",
+  "description": "Comprehensive local business discovery, digital catalog, intelligence platform, and verified directory for Bozeman, Montana and beyond.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
