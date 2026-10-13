@@ -73,7 +73,6 @@ export const AdminDashboard: React.FC = () => {
     adminLogs,
     addAdminLog,
     openBusinessProfile,
-    openDownloadModal,
   } = useDirectory();
 
   // Active Master Tab
@@ -444,15 +443,6 @@ export const AdminDashboard: React.FC = () => {
           >
             <Plus size={15} />
             <span>+ Add New Business</span>
-          </button>
-
-          <button
-            onClick={openDownloadModal}
-            className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-xs"
-            title="Create and download project file (.ZIP, .JSON, or .TAR.GZ)"
-          >
-            <Download size={14} />
-            <span>Download Project File</span>
           </button>
 
           <button

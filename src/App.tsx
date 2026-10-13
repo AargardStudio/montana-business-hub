@@ -13,7 +13,6 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { LeadModal } from './components/LeadModal';
 import { ClaimBusinessModal } from './components/ClaimBusinessModal';
 import { ComparisonModal } from './components/ComparisonModal';
-import { ProjectDownloadModal } from './components/ProjectDownloadModal';
 import { Footer } from './components/Footer';
 import { Megaphone, X } from 'lucide-react';
 
@@ -88,7 +87,6 @@ const AppContent: React.FC = () => {
       <LeadModal />
       <ClaimBusinessModal />
       <ComparisonModal />
-      <ProjectDownloadModal />
     </div>
   );
 };

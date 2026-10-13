@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   UserCheck,
   Globe2,
-  Download,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -29,7 +28,6 @@ export const Navbar: React.FC = () => {
     setIsComparisonModalOpen,
     savedBusinesses,
     openClaimModal,
-    openDownloadModal,
     userRole,
     setUserRole,
     selectedCity,
@@ -102,15 +100,6 @@ export const Navbar: React.FC = () => {
           <span className="bg-stone-800 text-stone-300 px-2 py-0.5 rounded text-[11px] font-mono">
             Demo Architecture Ready for Global Scaling
           </span>
-
-          <button
-            onClick={openDownloadModal}
-            className="inline-flex items-center gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer"
-            title="Create and download project archive (.ZIP / .JSON)"
-          >
-            <Download size={11} className="text-amber-400" />
-            <span>Download Project</span>
-          </button>
 
           {/* Quick Persona Switcher */}
           <div className="relative inline-block">
@@ -338,15 +327,6 @@ export const Navbar: React.FC = () => {
                 <span className="sm:hidden">Master</span>
               </button>
 
-              {/* Download Project File button */}
-              <button
-                onClick={openDownloadModal}
-                className="inline-flex items-center gap-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border border-stone-700 hover:border-amber-500/40 transition-colors cursor-pointer"
-                title="Create and download project file (.ZIP / .JSON)"
-              >
-                <Download size={13} className="text-amber-400" />
-                <span className="hidden md:inline">Download</span>
-              </button>
             </div>
 
             {/* Mobile menu toggle */}
@@ -452,18 +432,6 @@ export const Navbar: React.FC = () => {
               <span>Master Dashboard</span>
             </button>
           </div>
-
-          {/* Mobile Download Project Button */}
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              openDownloadModal();
-            }}
-            className="w-full p-2.5 rounded-lg text-center text-xs font-bold flex items-center justify-center gap-2 bg-stone-800 text-amber-400 border border-amber-500/30 hover:bg-stone-750 transition-colors cursor-pointer"
-          >
-            <Download size={14} />
-            <span>Download Project Archive (.ZIP / .JSON)</span>
-          </button>
 
           <div className="pt-2 border-t border-stone-800 flex items-center justify-between text-xs">
             <span className="text-stone-400">Select Persona:</span>

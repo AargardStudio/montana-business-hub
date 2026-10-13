@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
-import { Search, Sparkles, MapPin, ArrowRight, Layers, X, Download } from 'lucide-react';
+import { Search, Sparkles, MapPin, ArrowRight, Layers, X } from 'lucide-react';
 
 export const HeroSection: React.FC = () => {
-  const { filters, setFilters, updateFilter, setActiveTab, runAiSearch, aiSearchInterpretation, openDownloadModal } = useDirectory();
+  const { filters, setFilters, updateFilter, setActiveTab, runAiSearch, aiSearchInterpretation } = useDirectory();
   const [queryInput, setQueryInput] = useState(filters.query || '');
   const [isAiProcessing, setIsAiProcessing] = useState(false);
 
@@ -200,14 +200,6 @@ export const HeroSection: React.FC = () => {
           >
             <MapPin size={16} className="text-amber-400" />
             <span>Interactive Map View</span>
-          </button>
-          <button
-            onClick={openDownloadModal}
-            className="inline-flex items-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 font-bold px-4 py-2 rounded-xl border border-amber-500/40 transition-colors cursor-pointer"
-            title="Download complete project source code (.ZIP)"
-          >
-            <Download size={16} className="text-amber-400" />
-            <span>Download Entire Project</span>
           </button>
         </div>
       </div>

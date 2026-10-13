@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import JSZip from 'jszip';
 import {
   Business,
   Category,
@@ -95,11 +94,6 @@ interface DirectoryContextType {
   claimTargetBusinessId: string | null;
   claimTargetBusiness: Business | null;
   openClaimModal: (businessId?: string) => void;
-  isDownloadModalOpen: boolean;
-  setIsDownloadModalOpen: (open: boolean) => void;
-  openDownloadModal: () => void;
-  closeDownloadModal: () => void;
-  downloadProjectFile: (format?: 'zip' | 'tar' | 'json') => Promise<boolean>;
   leadModal: LeadModalState;
   isLeadModalOpen: boolean;
   leadModalBusiness: Business | null;
@@ -207,7 +201,6 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Modals
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const [claimTargetBusinessId, setClaimTargetBusinessId] = useState<string | null>(null);
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const [leadModal, setLeadModal] = useState<LeadModalState>({
     isOpen: false,
@@ -396,139 +389,6 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const closeClaimModal = () => {
     setIsClaimModalOpen(false);
-  };
-
-  const openDownloadModal = () => {
-    setIsDownloadModalOpen(true);
-  };
-
-  const closeDownloadModal = () => {
-    setIsDownloadModalOpen(false);
-  };
-
-  const downloadProjectFile = async (format: 'zip' | 'tar' | 'json' = 'zip'): Promise<boolean> => {
-    try {
-      if (format === 'json') {
-        const exportData = {
-          project: 'Bozeman Business Hub',
-          exportDate: new Date().toISOString(),
-          version: '1.0.0',
-          businesses,
-          categories,
-          events,
-          offers,
-          leads,
-          announcement,
-        };
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `bozeman-business-hub-data-${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          a.remove();
-          URL.revokeObjectURL(url);
-        }, 1000);
-        addAdminLog('Exported Project Data (JSON)', `Exported ${businesses.length} businesses and system dataset.`);
-        return true;
-      }
-
-      // Try fetching server-generated archive
-      let archiveBlob: Blob | null = null;
-      let filename = format === 'tar' ? 'bozeman-business-hub-project.tar.gz' : 'bozeman-business-hub-project.zip';
-
-      try {
-        const response = await fetch(`/api/project/download?format=${format}&t=${Date.now()}`);
-        if (response.ok) {
-          const blob = await response.blob();
-          // Ensure it's not an empty response or a tiny error message
-          if (blob && blob.size > 2000) {
-            archiveBlob = blob;
-          }
-        }
-      } catch (fetchErr) {
-        console.warn('Server archive download error, falling back to client-side packaging:', fetchErr);
-      }
-
-      // If server archive was not available or too small, generate with client-side JSZip
-      if (!archiveBlob && format === 'zip') {
-        const zip = new JSZip();
-
-        // 1. Project Info & Manifest
-        zip.file(
-          'README.md',
-          `# Bozeman Business Hub\n\nComprehensive local business discovery, digital catalog, intelligence platform, and verified directory for Bozeman, Montana.\n\n## Quick Start\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n`
-        );
-        zip.file(
-          'package.json',
-          JSON.stringify(
-            {
-              name: 'bozeman-business-hub',
-              version: '1.0.0',
-              description: 'Bozeman Business Hub local directory and catalog platform',
-              scripts: { dev: 'tsx server.ts', build: 'vite build', start: 'node dist/server.cjs' },
-              dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0', vite: '^8.0.0' },
-            },
-            null,
-            2
-          )
-        );
-
-        // 2. Data files
-        const dataFolder = zip.folder('data');
-        if (dataFolder) {
-          dataFolder.file('businesses.json', JSON.stringify(businesses, null, 2));
-          dataFolder.file('categories.json', JSON.stringify(categories, null, 2));
-          dataFolder.file('events.json', JSON.stringify(events, null, 2));
-          dataFolder.file('offers.json', JSON.stringify(offers, null, 2));
-          dataFolder.file('leads.json', JSON.stringify(leads, null, 2));
-        }
-
-        // 3. Project Configuration
-        zip.file(
-          'project-manifest.json',
-          JSON.stringify(
-            {
-              exportDate: new Date().toISOString(),
-              totalBusinesses: businesses.length,
-              verifiedCount: businesses.filter((b) => b.claimStatus === 'verified' || b.claimStatus === 'claimed').length,
-              categoriesCount: categories.length,
-            },
-            null,
-            2
-          )
-        );
-
-        archiveBlob = await zip.generateAsync({
-          type: 'blob',
-          compression: 'DEFLATE',
-          compressionOptions: { level: 6 },
-        });
-      }
-
-      if (!archiveBlob || archiveBlob.size === 0) {
-        throw new Error('Archive generation resulted in an empty file');
-      }
-
-      const blobUrl = URL.createObjectURL(archiveBlob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        a.remove();
-        URL.revokeObjectURL(blobUrl);
-      }, 1000);
-
-      addAdminLog('Downloaded Project Archive', `Format: ${format.toUpperCase()} (${(archiveBlob.size / 1024).toFixed(1)} KB)`);
-      return true;
-    } catch (err) {
-      console.error('Download failed:', err);
-      return false;
-    }
   };
 
   const claimTargetBusiness = claimTargetBusinessId
@@ -823,11 +683,6 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         claimTargetBusinessId,
         claimTargetBusiness,
         openClaimModal,
-        isDownloadModalOpen,
-        setIsDownloadModalOpen,
-        openDownloadModal,
-        closeDownloadModal,
-        downloadProjectFile,
         leadModal,
         isLeadModalOpen: leadModal.isOpen,
         leadModalBusiness: leadModal.business,

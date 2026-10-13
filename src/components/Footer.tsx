@@ -8,12 +8,10 @@ import {
   Heart,
   ExternalLink,
   MessageCircle,
-  Download,
-  FolderArchive,
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { setActiveTab, openClaimModal, updateFilter, closeBusinessProfile, openDownloadModal } = useDirectory();
+  const { setActiveTab, openClaimModal, updateFilter, closeBusinessProfile } = useDirectory();
 
   const handleCategoryClick = (catId: string) => {
     closeBusinessProfile();
@@ -191,15 +189,6 @@ export const Footer: React.FC = () => {
                 </button>
               </li>
               <li>
-                <button
-                  onClick={openDownloadModal}
-                  className="text-stone-300 hover:text-amber-400 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Download size={13} className="text-amber-400" />
-                  <span>Download Project File (.ZIP / .JSON)</span>
-                </button>
-              </li>
-              <li>
                 <span className="text-stone-500 block pt-3 text-[11px] font-semibold uppercase tracking-wider">
                   Expanding Architecture:
                 </span>
@@ -215,14 +204,6 @@ export const Footer: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-4">
           <p>© {new Date().getFullYear()} Bozeman Business Hub. Built for Gallatin County, Montana.</p>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            <button
-              onClick={openDownloadModal}
-              className="inline-flex items-center gap-1.5 text-stone-400 hover:text-amber-400 transition-colors cursor-pointer font-medium"
-            >
-              <Download size={12} className="text-amber-400" />
-              <span>Download Project File</span>
-            </button>
-            <span>•</span>
             <span>Structured for Schema.org & Local SEO</span>
             <span>•</span>
             <span>Direct WhatsApp & Phone Routing</span>
