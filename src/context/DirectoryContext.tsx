@@ -136,6 +136,11 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
+  /** Shared helper: replaces one business in state via an updater fn, leaving all others untouched. */
+  const updateBusinessById = (businessId: string, updater: (b: Business) => Business) => {
+    setBusinesses(prev => prev.map(b => (b.id === businessId ? updater(b) : b)));
+  };
+
   const [categories, setCategories] = useState<Category[]>(CATEGORIES);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
   const [offers, setOffers] = useState<OfferItem[]>(INITIAL_OFFERS);
@@ -327,22 +332,15 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setLeads(prev => [newLead, ...prev]);
 
     // Update business analytics count
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === data.businessId) {
-          return {
-            ...b,
-            analytics: {
-              ...b.analytics,
-              leads: (b.analytics.leads || 0) + 1,
-              quoteRequests: data.type === 'quote' ? (b.analytics.quoteRequests || 0) + 1 : b.analytics.quoteRequests,
-              bookings: data.type === 'booking' ? (b.analytics.bookings || 0) + 1 : b.analytics.bookings,
-            },
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(data.businessId, b => ({
+      ...b,
+      analytics: {
+        ...b.analytics,
+        leads: (b.analytics.leads || 0) + 1,
+        quoteRequests: data.type === 'quote' ? (b.analytics.quoteRequests || 0) + 1 : b.analytics.quoteRequests,
+        bookings: data.type === 'booking' ? (b.analytics.bookings || 0) + 1 : b.analytics.bookings,
+      },
+    }));
 
     // Also sync to backend API endpoint
     try {
@@ -369,22 +367,16 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...reviewData,
     };
 
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          const updatedReviews = [newReview, ...(b.reviews || [])];
-          const avgRating =
-            updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length;
-          return {
-            ...b,
-            reviews: updatedReviews,
-            reviewsCount: updatedReviews.length,
-            rating: Number(avgRating.toFixed(2)),
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => {
+      const updatedReviews = [newReview, ...(b.reviews || [])];
+      const avgRating = updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length;
+      return {
+        ...b,
+        reviews: updatedReviews,
+        reviewsCount: updatedReviews.length,
+        rating: Number(avgRating.toFixed(2)),
+      };
+    });
   };
 
   const closeClaimModal = () => {
@@ -399,22 +391,15 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     businessId: string,
     ownerInfo: { ownerName: string; email?: string; businessEmail?: string; phone?: string; businessPhone?: string; title?: string; whatsappNumber?: string }
   ) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            claimStatus: 'claimed',
-            verificationTier: b.verificationTier === 'unclaimed' ? 'claimed' : b.verificationTier,
-            verifiedItems: [
-              ...(b.verifiedItems || []),
-              `Ownership verified by ${ownerInfo.ownerName} (${ownerInfo.title || 'Owner'}) on ${new Date().toLocaleDateString()}`,
-            ],
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({
+      ...b,
+      claimStatus: 'claimed',
+      verificationTier: b.verificationTier === 'unclaimed' ? 'claimed' : b.verificationTier,
+      verifiedItems: [
+        ...(b.verifiedItems || []),
+        `Ownership verified by ${ownerInfo.ownerName} (${ownerInfo.title || 'Owner'}) on ${new Date().toLocaleDateString()}`,
+      ],
+    }));
   };
 
   const addAdminLog = (action: string, details: string) => {
@@ -440,92 +425,44 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const addServiceToBusiness = (businessId: string, service: ServiceItem) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            services: [service, ...(b.services || [])],
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({ ...b, services: [service, ...(b.services || [])] }));
     addAdminLog('Added Service', `Added service "${service.name}" to business ID ${businessId}`);
   };
 
   const updateServiceInBusiness = (businessId: string, serviceId: string, service: Partial<ServiceItem>) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            services: (b.services || []).map(s => (s.id === serviceId ? { ...s, ...service } : s)),
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({
+      ...b,
+      services: (b.services || []).map(s => (s.id === serviceId ? { ...s, ...service } : s)),
+    }));
     addAdminLog('Updated Service', `Updated service ID ${serviceId} on business ID ${businessId}`);
   };
 
   const deleteServiceFromBusiness = (businessId: string, serviceId: string) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            services: (b.services || []).filter(s => s.id !== serviceId),
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({
+      ...b,
+      services: (b.services || []).filter(s => s.id !== serviceId),
+    }));
     addAdminLog('Deleted Service', `Removed service ID ${serviceId} from business ID ${businessId}`);
   };
 
   const addProductToBusiness = (businessId: string, product: ProductItem) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            products: [product, ...(b.products || [])],
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({ ...b, products: [product, ...(b.products || [])] }));
     addAdminLog('Added Product', `Added product "${product.name}" to business ID ${businessId}`);
   };
 
   const updateProductInBusiness = (businessId: string, productId: string, product: Partial<ProductItem>) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            products: (b.products || []).map(p => (p.id === productId ? { ...p, ...product } : p)),
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({
+      ...b,
+      products: (b.products || []).map(p => (p.id === productId ? { ...p, ...product } : p)),
+    }));
     addAdminLog('Updated Product', `Updated product ID ${productId} on business ID ${businessId}`);
   };
 
   const deleteProductFromBusiness = (businessId: string, productId: string) => {
-    setBusinesses(prev =>
-      prev.map(b => {
-        if (b.id === businessId) {
-          return {
-            ...b,
-            products: (b.products || []).filter(p => p.id !== productId),
-          };
-        }
-        return b;
-      })
-    );
+    updateBusinessById(businessId, b => ({
+      ...b,
+      products: (b.products || []).filter(p => p.id !== productId),
+    }));
     addAdminLog('Deleted Product', `Removed product ID ${productId} from business ID ${businessId}`);
   };
 
@@ -581,9 +518,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const updateBusinessProfile = (businessId: string, updatedData: Partial<Business>) => {
-    setBusinesses(prev =>
-      prev.map(b => (b.id === businessId ? { ...b, ...updatedData } : b))
-    );
+    updateBusinessById(businessId, b => ({ ...b, ...updatedData }));
     addAdminLog('Updated Business', `Updated listing profile for ID ${businessId}`);
   };
 
