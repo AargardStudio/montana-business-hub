@@ -14,68 +14,16 @@ import {
 } from 'lucide-react';
 
 export const EventsAndDealsView: React.FC = () => {
-  const { events, businesses, openBusinessProfile, trackInteraction } = useDirectory();
+  const { events, offers, businesses, openBusinessProfile, trackInteraction } = useDirectory();
   const [activeSubTab, setActiveSubTab] = useState<'all' | 'events' | 'deals'>('all');
 
-  // Compile special offers from mock businesses
-  const SPECIAL_OFFERS = [
-    {
-      id: 'deal-1',
-      businessId: 'biz-woodworking-1',
-      businessName: 'Montana Craft Woodworking',
-      title: 'Free 3D Architectural CAD Rendering with Custom Timber Project',
-      discount: 'Value $450',
-      description:
-        'Book your fall home addition or timber frame pergola and receive full 3D conceptual CAD modeling and site survey at no cost.',
-      validUntil: 'October 31, 2026',
-      promoCode: 'BOZEMAN-CRAFT',
-      category: 'Contractors',
-    },
-    {
-      id: 'deal-2',
-      businessId: 'biz-outdoor-1',
-      businessName: 'Bridger Mountain Outfitters',
-      title: 'Early Bird Ski Tuning & Ceramic Wax Pass',
-      discount: '25% Off Multi-Pack',
-      description:
-        'Get four precision stone grind and temperature-tailored ceramic wax sessions before the first snow dump at Bridger Bowl.',
-      validUntil: 'November 15, 2026',
-      promoCode: 'BRIDGER-SNOW',
-      category: 'Outdoor',
-    },
-    {
-      id: 'deal-3',
-      businessId: 'biz-restaurant-1',
-      businessName: 'Blackbird Kitchen & Bar',
-      title: 'Gallatin Local Tasting Flight with Dinner Entrée',
-      discount: 'Complimentary Flight',
-      description:
-        'Mention Bozeman Business Hub on Tuesday or Wednesday evenings for a complimentary Montana craft cider or wine pairing flight with any wood-fired entrée.',
-      validUntil: 'Ongoing 2026',
-      promoCode: 'HUB-LOCAL',
-      category: 'Food & Drink',
-    },
-    {
-      id: 'deal-4',
-      businessId: 'biz-auto-1',
-      businessName: 'Gallatin Valley Auto & Diesel',
-      title: 'Winter Pre-Season 4x4 Safety & Block Heater Diagnostic',
-      discount: '$49 (Reg $120)',
-      description:
-        'Full 40-point winter vehicle readiness inspection: alternator load test, coolant freeze point analysis, 4WD transfer case lube, and battery cold-crank test.',
-      validUntil: 'November 30, 2026',
-      promoCode: 'WINTER-READY',
-      category: 'Automotive',
-    },
-  ];
-
-  const handleClaimDealOnWhatsApp = (deal: (typeof SPECIAL_OFFERS)[0]) => {
+  const handleClaimDealOnWhatsApp = (deal: (typeof offers)[0]) => {
     const biz = businesses.find((b) => b.id === deal.businessId);
     if (!biz) return;
     trackInteraction(biz.id, 'whatsappClicks');
     const url = getContextualWhatsAppUrl(biz.contact.whatsapp, biz.name, {
       type: 'general',
-      itemName: `${deal.title} (Promo Code: ${deal.promoCode})`,
+      itemName: `${deal.title}${deal.code ? ` (Promo Code: ${deal.code})` : ''}`,
     });
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -128,7 +76,7 @@ export const EventsAndDealsView: React.FC = () => {
           }`}
         >
           <Tag size={14} />
-          <span>Merchant Deals ({SPECIAL_OFFERS.length})</span>
+          <span>Merchant Deals ({offers.length})</span>
         </button>
       </div>
 
@@ -212,7 +160,7 @@ export const EventsAndDealsView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {SPECIAL_OFFERS.map((deal) => (
+            {offers.map((deal) => (
               <div
                 key={deal.id}
                 className="bg-white rounded-2xl border-2 border-dashed border-amber-300 p-6 shadow-xs hover:border-amber-500 transition-colors flex flex-col justify-between"
@@ -220,7 +168,7 @@ export const EventsAndDealsView: React.FC = () => {
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md">
-                      {deal.discount}
+                      {deal.discountTag}
                     </span>
                     <span className="text-[11px] text-stone-400">Valid until {deal.validUntil}</span>
                   </div>
@@ -238,12 +186,16 @@ export const EventsAndDealsView: React.FC = () => {
                 </div>
 
                 <div className="border-t border-stone-100 pt-3 flex items-center justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-stone-400 block">Promo Code</span>
-                    <span className="font-mono font-bold text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded border border-stone-200">
-                      {deal.promoCode}
-                    </span>
-                  </div>
+                  {deal.code ? (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">Promo Code</span>
+                      <span className="font-mono font-bold text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded border border-stone-200">
+                        {deal.code}
+                      </span>
+                    </div>
+                  ) : (
+                    <span />
+                  )}
 
                   <button
                     onClick={() => handleClaimDealOnWhatsApp(deal)}
