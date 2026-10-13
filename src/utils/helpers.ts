@@ -70,6 +70,20 @@ export function formatTimeString(time24: string): string {
 }
 
 /**
+ * Trigger a browser download of a JSON payload as a file.
+ */
+export function downloadJSON(data: unknown, filenamePrefix: string): void {
+  const dataStr =
+    'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
+  const a = document.createElement('a');
+  a.setAttribute('href', dataStr);
+  a.setAttribute('download', `${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.json`);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/**
  * Generate LocalBusiness Schema for SEO
  */
 export function generateLocalBusinessSchema(business: Business) {
